@@ -60,10 +60,10 @@ function returnFnResult(fn) {
    console.log(f()); // выведет 13
  */
 function returnCounter(number=0) {
-    const F = () => ++number
-    return  F;
+    const f = () => ++number;
+    
+    return f;
 }
-
 
 /*
  Задание 5 *:
@@ -76,9 +76,11 @@ function returnCounter(number=0) {
  */
 function returnArgumentsArray() {
     let args = [];
+
     for (var i = 0; i < arguments.length; i++) {
         args[i] = arguments[i];
     }
+
     return args;
 }
 
@@ -97,8 +99,8 @@ function returnArgumentsArray() {
 
    console.log(newSum()) выведет 6
  */
-function bindFunction(fn,...args) {
-    return fn.bind(fn,...args);
+function bindFunction(fn, ...args) {
+    return fn.bind(fn, ...args);
 }
 
 export {
