@@ -56,6 +56,7 @@ function findAllPSiblings(where) {
 
     for (let child of where.children) {
         const nextElement = child.nextElementSibling;
+
         if ((nextElement!=null) && (nextElement.tagName == 'P')) {
             result.push(child);
         }
@@ -106,15 +107,14 @@ function findError(where) {
  */
 function deleteTextNodes(where) {
 
-    for (let child of where.childNodes) {
+    for (let i = 0; i < where.childNodes.length; i++) {
+
+        let child = where.childNodes[i];
 
         if (child.nodeType==3) {
             where.removeChild(child);
         }
-
-
     }
-
 }
 
 /*
@@ -131,14 +131,16 @@ function deleteTextNodes(where) {
  */
 function deleteTextNodesRecursive(where) {
 
-    for (let child of where.childNodes) {
+    for (let i = 0; i < where.childNodes.length; i++) {
 
-      if (child.nodeType==3) {
-          where.removeChild(child);  
-      }
-      else {
-        deleteTextNodesRecursive(child); 
-      }
+        let child = where.childNodes[i];
+
+        if (child.nodeType==3) {
+            where.removeChild(child); 
+            i--; 
+        } else {
+            deleteTextNodesRecursive(child); 
+        }
 
     }
 }
@@ -163,9 +165,34 @@ function deleteTextNodesRecursive(where) {
      texts: 3
    }
  */
-function collectDOMStat(root) {
-}
+function collectDOMStat(root, result={
+    tags: {},
+    classes: {},
+    texts: 0
+}) {
 
+    for (let i = 0; i < root.childNodes.length; i++) {
+  
+        let child = root.childNodes[i];
+  
+        if (child.nodeType==3) {
+            result.texts++;  
+        } else {
+            let tagValue = result.tags[child.tagName];
+
+            result.tags[child.tagName] = tagValue == undefined ? 1: ++tagValue;
+            for (let j = 0; j < child.classList.length; j++) {
+                let classValue = result.classes[child.classList[j]];
+
+                result.classes[child.classList[j]] = classValue == undefined ? 1 : ++classValue;
+            }
+            collectDOMStat(child, result);
+        }
+    }
+
+    return result;
+}
+  
 /*
  Задание 8 *:
 
@@ -198,7 +225,39 @@ function collectDOMStat(root) {
      nodes: [div]
    }
  */
-function observeChildNodes(where, fn) {
+function observeChildNodes(where, fn, mutationConfig = { childList: true, subtree: true } ) {
+
+    var observer = new MutationObserver(function(mutations) {
+        mutations.forEach(function(mutation) {
+            if (mutation.addedNodes.length > 0) {
+                let arr = [...mutation.addedNodes];
+
+                fn(
+                    {
+                        type: 'insert',
+                        nodes: arr
+                    });
+            } else if (mutation.removedNodes.length > 0) {
+                let arr = [...mutation.removedNodes];
+
+                fn(
+                    {
+                        type: 'remove',
+                        nodes: arr 
+                    });
+            }
+
+        });
+    });
+
+    observer.observe(where, mutationConfig);
+  
+    for (let i = 0; i < where.childNodes.length; i++) {
+        let child = where.childNodes[i];
+
+        observeChildNodes(child, fn);
+    }
+
 }
 
 export {
