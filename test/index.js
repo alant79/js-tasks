@@ -1,114 +1,111 @@
-import { assert } from 'chai';
-import { randomValue as random, randomStringArray } from '../helper';
+import assert from 'assert';
 import {
-    bindFunction,
-    sumWithDefaults,
-    returnArgumentsArray,
-    returnCounter,
-    returnFirstArgument,
-    returnFnResult
+    addListener,
+    removeListener,
+    skipDefault,
+    emulateClick,
+    delegate,
+    once
 } from '../src/index';
 
-describe('ДЗ 1 - функции', () => {
-    describe('returnFirstArgument', () => {
-        it('должна возвращать переданный аргумент', () => {
-            let value = random();
-            let result = returnFirstArgument(value);
+describe('ДЗ 5.1 - DOM Events', () => {
+    describe('addListener', () => {
+        it('должна добавлять обработчик событий элемента', () => {
+            let target = document.createElement('div');
+            let eventName = 'click';
+            let passed = false;
+            let fn = () => passed = true;
 
-            assert.strictEqual(result, value);
+            addListener(eventName, target, fn);
+
+            assert(!passed);
+            target.dispatchEvent(new CustomEvent(eventName));
+            assert(passed);
         });
     });
 
-    describe('sumWithDefaults', () => {
-        it('должна возвращать сумму переданных аргументов', () => {
-            let valueA = random('number');
-            let valueB = random('number');
-            let result = sumWithDefaults(valueA, valueB);
+    describe('removeListener', () => {
+        it('должна удалять обработчик событий элемента', () => {
+            let target = document.createElement('div');
+            let eventName = 'click';
+            let passed = false;
+            let fn = () => passed = true;
 
-            assert.strictEqual(result, valueA + valueB);
-        });
+            target.addEventListener(eventName, fn);
 
-        it('значение по умолчанию второго аргумента должно быть 100', () => {
-            let value = random('number');
-            let result = sumWithDefaults(value);
+            removeListener(eventName, target, fn);
 
-            assert.strictEqual(result, value + 100);
+            target.dispatchEvent(new CustomEvent(eventName));
+            assert(!passed);
         });
     });
 
-    describe('returnArgumentsArray', () => {
-        it('должна возвращать переданные аргументы в виде массива', () => {
+    describe('skipDefault', () => {
+        it('должна добавлять такой обработчик, который предотвращает действие по умолчанию', () => {
+            let target = document.createElement('div');
+            let eventName = 'click';
             let result;
-            let value;
 
-            value = random('array', 1);
-            result = returnArgumentsArray(...value);
-            assert.deepEqual(result, value);
-        });
+            skipDefault(eventName, target);
 
-        it('должна возвращать пустой массив если нет аргументов', () => {
-            let result = returnArgumentsArray();
-
-            assert.deepEqual(result, []);
+            result = target.dispatchEvent(new CustomEvent(eventName, { cancelable: true }));
+            assert(!result);
         });
     });
 
-    describe('returnFnResult', () => {
-        it('должна возвращать результат вызова переданной функции', () => {
-            function fn() {
-                return value;
-            }
+    describe('emulateClick', () => {
+        it('должна эмулировать клик по элементу', () => {
+            let target = document.createElement('div');
+            let eventName = 'click';
+            let passed = false;
+            let fn = () => passed = true;
 
-            let value = random();
-            let result = returnFnResult(fn);
+            target.addEventListener(eventName, fn);
 
-            assert.strictEqual(result, value);
+            emulateClick(target);
+
+            assert(passed);
         });
     });
 
-    describe('returnCounter', () => {
-        it('должна возвращать функцию', () => {
-            let result = returnCounter();
+    describe('delegate', () => {
+        it('должна добавлять обработчик кликов, который реагирует только на клики по кнопкам', () => {
+            let target = document.createElement('div');
+            let eventName = 'click';
+            let passed = false;
+            let fn = () => passed = true;
 
-            assert.typeOf(result, 'function');
-        });
+            target.innerHTML = '<div></div><a href="#"></a><p></p><button></button>';
 
-        it('возвращаемая функция должна увеличивать переданное число на единицу при каждом вызове', () => {
-            let value = random('number');
-            let result = returnCounter(value);
+            delegate(target, fn);
 
-            assert.equal(result(), value + 1);
-            assert.equal(result(), value + 2);
-            assert.equal(result(), value + 3);
-        });
-
-        it('значение аргумента должно быть 0 по умолчанию', () => {
-            let result = returnCounter();
-
-            assert.equal(result(), 1);
-            assert.equal(result(), 2);
-            assert.equal(result(), 3);
+            assert(!passed);
+            target.children[0].dispatchEvent(new CustomEvent(eventName, { bubbles: true }));
+            assert(!passed);
+            target.children[1].dispatchEvent(new CustomEvent(eventName, { bubbles: true }));
+            assert(!passed);
+            target.children[2].dispatchEvent(new CustomEvent(eventName, { bubbles: true }));
+            assert(!passed);
+            target.children[3].dispatchEvent(new CustomEvent(eventName, { bubbles: true }));
+            assert(passed);
         });
     });
 
-    describe('bindFunction', () => {
-        let valuesArr = randomStringArray();
+    describe('once', () => {
+        it('должна добавлять обработчик кликов, который сработает только один раз и удалится', () => {
+            let target = document.createElement('div');
+            let eventName = 'click';
+            let passed = 0;
+            let fn = () => passed++;
 
-        function fn(...valuesArr) {
-            return [...arguments].join('');
-        }
+            once(target, fn);
 
-        it('должна возвращать функцию', () => {
-            let result = bindFunction(fn);
-
-            assert.typeOf(result, 'function');
-        });
-
-        it('должна привязывать любое кол-во аргументов возвращаемой функции', () => {
-
-            let result = bindFunction(fn, ...valuesArr);
-
-            assert.equal(result(), valuesArr.join(''));
+            assert.equal(passed, 0);
+            target.dispatchEvent(new CustomEvent(eventName));
+            assert.equal(passed, 1);
+            target.dispatchEvent(new CustomEvent(eventName));
+            assert.equal(passed, 1);
+            target.dispatchEvent(new CustomEvent(eventName));
         });
     });
 });
