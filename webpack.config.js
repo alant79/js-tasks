@@ -16,7 +16,7 @@ rules.push({
 
 module.exports = {
     entry: {
-        main: './src/dnd.js',
+        main: './src/index.js',
         dnd: './src/dnd.js'
     },
     devServer: {
