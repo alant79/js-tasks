@@ -16,6 +16,7 @@
    homeworkContainer.appendChild(newDiv);
  */
 const homeworkContainer = document.querySelector('#homework-container');
+var id = 0;
 
 /*
  Функция должна создавать и возвращать новый div с классом draggable-div и случайными размерами/цветом/позицией
@@ -28,22 +29,29 @@ const homeworkContainer = document.querySelector('#homework-container');
  */
 function createDiv() {
     let div = document.createElement('div');
+
     const maxColor = 255;
     const maxWidth = document.body.clientWidth;
     const maxHeight = document.body.clientHeight;
     const width = Math.round(Math.random() * maxWidth);
     const height = Math.round(Math.random() * maxHeight);
 
+    homeworkContainer.style.position = 'relative';
+    homeworkContainer.style.width = '100%';
+    homeworkContainer.style.height = '100vh';
+
+    div.id = ++id;
     div.classList.add('draggable-div');
     div.style.width = width + 'px';
     div.style.height = height + 'px';
     div.style.left = Math.min(Math.round(Math.random() * maxWidth), maxWidth - width) + 'px';
     div.style.top = Math.min(Math.round(Math.random() * maxHeight), maxHeight - height) + 'px';
-    div.style.backgroundColor = 'rgb('+Math.round(Math.random() * maxColor) +
+    div.style.backgroundColor = 'rgb('+ Math.round(Math.random() * maxColor) +
     ',' + Math.round(Math.random() * maxColor) +
     ',' + Math.round(Math.random() * maxColor) + ')';
     div.setAttribute('draggable', true);
-    
+    div.style.position = 'absolute';
+
     return div;
 
 }
@@ -56,8 +64,41 @@ function createDiv() {
    homeworkContainer.appendChild(newDiv);
    addListeners(newDiv);
  */
+
+function handleDragStart(ev) {
+    ev.dataTransfer.effectAllowed = 'move';
+    ev.dataTransfer.dropEffect = 'move';
+    ev.dataTransfer.setData('text', ev.target.id + ',' + ev.clientX + ',' + ev.clientY);   
+
+    return true;
+}
+
+function handleDragEnter(ev) {
+    ev.preventDefault();
+
+    return true;
+}
+function handleDragOver(ev) {
+    ev.preventDefault();
+}
+
 function addListeners(target) {
-    return target;
+    target.addEventListener('dragstart', handleDragStart, false);
+    homeworkContainer.addEventListener('dragover', handleDragOver, false);
+    homeworkContainer.addEventListener('dragenter', handleDragEnter, false); 
+    homeworkContainer.addEventListener('drop', handleDragDrop, false);    
+}
+
+function handleDragDrop(ev) {
+    const data = ev.dataTransfer.getData('text');
+    const mas = data.split(',');
+    let el = document.getElementById(mas[0]);
+
+    el.style.left = Number.parseInt(el.style.left) + ev.clientX - mas[1] +'px';
+    el.style.top = Number.parseInt(el.style.top) + ev.clientY - mas[2]+ 'px';
+    ev.stopPropagation();
+
+    return false;
 }
 
 let addDivButton = homeworkContainer.querySelector('#addDiv');
