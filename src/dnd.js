@@ -16,7 +16,6 @@
    homeworkContainer.appendChild(newDiv);
  */
 const homeworkContainer = document.querySelector('#homework-container');
-var id = 0;
 
 /*
  Функция должна создавать и возвращать новый div с классом draggable-div и случайными размерами/цветом/позицией
@@ -29,6 +28,7 @@ var id = 0;
  */
 function createDiv() {
     let div = document.createElement('div');
+    let countDiv = document.querySelectorAll('.draggable-div').length;
 
     const maxColor = 255;
     const maxWidth = document.body.clientWidth;
@@ -40,7 +40,7 @@ function createDiv() {
     homeworkContainer.style.width = '100%';
     homeworkContainer.style.height = '100vh';
 
-    div.id = ++id;
+    div.id = ++countDiv;
     div.classList.add('draggable-div');
     div.style.width = width + 'px';
     div.style.height = height + 'px';
