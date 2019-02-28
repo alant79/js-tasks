@@ -34,23 +34,25 @@ function delayPromise(seconds) {
  */
 function loadAndSortTowns() {
     const url = 'https://raw.githubusercontent.com/smelukov/citiesTest/master/cities.json';
-    let promise = new Promise ((resolve) => {fetch(url)
-      .then(response => response.json())
-      .then(cities => {
-          cities.sort(function(a, b) { 
-              if (a.name > b.name) {
-                    return 1;
-              } else if (b.name > a.name) {
-                    return -1;
-              }
-              return 0;
-          });
+    let promise = new Promise ((resolve) => { 
+        fetch(url)
+            .then(response => response.json())
+            .then(cities => {
+                cities.sort(function(a, b) { 
+                    if (a.name > b.name) {
+                        return 1;
+                    } else if (b.name > a.name) {
+                        return -1;
+                    }
 
-          resolve(cities);
-       });
+                    return 0;
+                });
+
+                resolve(cities);
+            });
     });
 
-  return promise;
+    return promise;
 }
 
 export {
