@@ -28,6 +28,8 @@
    const newDiv = document.createElement('div');
    homeworkContainer.appendChild(newDiv);
  */
+import { loadAndSortTowns } from '../src/index';
+
 const homeworkContainer = document.querySelector('#homework-container');
 let mas = [];
 
@@ -35,50 +37,27 @@ let mas = [];
  Функция должна вернуть Promise, который должен быть разрешен с массивом городов в качестве значения
 
  Массив городов пожно получить отправив асинхронный запрос по адресу
- https://raw.githubusercontent.com/smelukov/citiesTest/master/cities.json
+ https://raw.githubusercontent.com/smelukov/citiesTest/master/cities.jsonnpm
  */
 function loadTowns() {
-    const url = 'https://raw.githubusercontent.com/smelukov/citiesTest/master/cities.json';
-    let promise = new Promise ((resolve) => {
-        fetch(url)
-            .then(function (response) {
-                if (response.status !== 200) {
-                    return Promise.reject(new Error(response.statusText))
-                }
+    let promise = loadAndSortTowns()
+        .catch(function (error) {
+            loadingBlock.style.display = 'none';
+            let er = document.createElement('div');
+            let tryAgain = document.createElement('button');
+            
+            er.innerText = 'Не удалось загрузить города: '+error;
+            homeworkContainer.appendChild(er, loadingBlock);
+            
+            tryAgain.innerText = 'Повторить';
+            homeworkContainer.appendChild(tryAgain, er);
+            tryAgain.addEventListener('click', ()=>{
+                homeworkContainer.removeChild(er);
+                homeworkContainer.removeChild(tryAgain);
+                getTowns();
+            })
+        })
 
-                return response.json();
-            })
-            .then(cities => {
-                cities.sort(function(a, b) { 
-                    if (a.name > b.name) {
-                        return 1;
-                    } else if (b.name > a.name) {
-                        return -1;
-                    }
-      
-                    return 0;
-                });
-      
-                resolve(cities);
-            })
-            .catch(function (error) {
-                loadingBlock.style.display = 'none';
-                let er = document.createElement('div');
-                let tryAgain = document.createElement('button');
-            
-                er.innerText = 'Не удалось загрузить города: '+error;
-                homeworkContainer.appendChild(er, loadingBlock);
-            
-                tryAgain.innerText = 'Повторить';
-                homeworkContainer.appendChild(tryAgain, er);
-                tryAgain.addEventListener('click', ()=>{
-                    homeworkContainer.removeChild(er);
-                    homeworkContainer.removeChild(tryAgain);
-                    getTowns();
-                })
-            })
-    });
-  
     return promise;
 
 }
@@ -108,7 +87,7 @@ function makeTownsList(what) {
     if (what != '') {
         for (let i = 0; i < mas.length; i++) {
             if (isMatching(mas[i], what)) {
-                let li = document.createElement('li');
+                let li = document.createElement('div');
 
                 li.innerText = mas[i];
                 filterResult.appendChild(li);
