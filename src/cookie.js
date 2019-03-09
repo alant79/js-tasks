@@ -62,6 +62,18 @@ window.addEventListener('load', ()=> {
     loadCookie();
 })
 
+function getCookies() {
+    return document.cookie
+        .split('; ')
+        .filter(Boolean)
+        .map(cookie => cookie.match(/^([^=]+)=(.+)/))
+        .reduce((obj, [, name, value]) => {
+            obj[name] = value;
+
+            return obj;
+        }, {});
+}
+
 function loadCookie(what=undefined) {
 
     for (let i = 0; i < listTable.children.length; i++) {
@@ -69,25 +81,22 @@ function loadCookie(what=undefined) {
         i--;
     }
 
-    if (document.cookie && document.cookie != '') {
-        const split = document.cookie.split(';');
+    const cookies = getCookies();
 
-        for (var i = 0; i < split.length; i++) {
-            let tr = document.createElement('tr');
-            let tdName = document.createElement('td');
-            let tdValue = document.createElement('td');
-            let tdButton = document.createElement('td');     
-            let button = document.createElement('button');     
-            const nameValue = split[i].split('=');
-            let name = nameValue[0].replace(/^ /, '');
-            let value =decodeURIComponent(nameValue[1]);
-    
-            name=decodeURIComponent(nameValue[0]);
+    for (let name in cookies) {
+        if (cookies.hasOwnProperty(name)) {
+            let value = cookies[name];
 
             if ((what == undefined) || ((isMatching(name, what)||isMatching(value, what)))) {
 
+                let tr = document.createElement('tr');
+                let tdName = document.createElement('td');
+                let tdValue = document.createElement('td');
+                let tdButton = document.createElement('td');     
+                let button = document.createElement('button');     
+
                 listTable.appendChild(tr);
-    
+
                 tdName.textContent = name;
                 tr.appendChild(tdName);
         
@@ -106,4 +115,5 @@ function loadCookie(what=undefined) {
             }
         }
     }
+       
 }
