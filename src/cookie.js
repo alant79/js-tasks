@@ -110,7 +110,7 @@ function loadCookie(what=undefined) {
                     let valueRemove = e.target.parentNode.previousElementSibling.previousElementSibling.textContent;
                     
                     document.cookie = `${valueRemove}=; expires=Thu, 01 Jan 1970 00:00:01 GMT;`; 
-                    loadCookie();
+                    loadCookie(filterNameInput.value);
                 })
             }
         }
